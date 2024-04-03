@@ -1,0 +1,8 @@
+Notes
+
+The main purpose of this project is to understand how to design a system leveraging microservices.
+
+microservices are going to be running on a k8s cluster. 
+Gateway is the entry point to our system
+
+JWT: JSON Web Token, Used for authentication and authorization
