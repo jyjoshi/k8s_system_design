@@ -3,6 +3,77 @@ Notes
 The main purpose of this project is to understand how to design a system leveraging microservices.
 
 microservices are going to be running on a k8s cluster. 
+That cluster's internal network is accessible to the outside world through the internet. 
+Outside user accesses the internal services using the GATEWAY. 
+
+Gateway communicates with the internal services the request received from client. 
+
+To upload a file: gateway needs to have upload api
+
+Auth service: Provides authorization to user to access fully the application endpoints. 
+
+Basic Authentication: Userprovides username and password 
+base64(username: Password), we check this in our mysql db. 
 Gateway is the entry point to our system
 
 JWT: JSON Web Token, Used for authentication and authorization
+3 parts: 
+
+Two json formatted strings and a signature
+Base64 encoded. Seperated by a '.'
+
+First part:
+Header: Contains a kv pair 1. kind of signing algorithm (Uses SH256 symmetric signing algorithm), 2. type of token (in our case JWT)
+
+Every api call uses the signing key (provides the access permissions)
+
+Second Part:
+Payload: Claims for user: pieces of information about the user. 
+Eg. username, isadmin etc. 
+
+3rd Part:
+Verify Signature: 
+
+1. Encoded header
+2. Encoded Payload
+3. Private Key 
+
+All encoded using our signing algorithm.
+
+
+Manifests:
+We write the infrastructure code for our auth deployment
+In python/src/auth :
+We wrote the code for our auth service
+We created a dockerfile to build the source code into a docker image
+We then pushed the docker image to a repository on the internet
+
+Now, within our manifests infrastructure code (auth-deploy.yaml)
+We are pulling that image from the internet and deploying it to k8s
+The image that we are pulling coutains our code. 
+
+So all these files within the manifest directory
+when applied, will interface with the k8s api which is the api for our k8s cluster
+So these files will create our service and corresponding resources. 
+
+To do this, all we need to do is kubectl apply -f ./ in the manifests directory 
+
+
+Kubernetes:
+
+K8s eliminates many of the manual operations in deploying and scaling containerized applications. 
+
+For example, if we configure a service to have 4 pods, k8s will keep a track of all the pods up and running
+And if any pods go down, then k8s will automatically scale the deployment so that the number of pods matches the 
+configured amount. So there is no need to manually deploy individual pods when a pod crashes. 
+K8s also makes manually scaling pods more streamlined. 
+
+Say I have a service that load balances request to individual pods using round robin.
+And that service is expeiencing more traffic than the pods to handle.
+So we increase From 2 to 5 pods.
+We can do this all using the command kubectl scale deployment --replicas=6 service
+
+It will also autoconfigure the load balancer to handle the newly created pods. 
+
+We can cluster together a bunch of containerized services and easily orchestrate 
+
