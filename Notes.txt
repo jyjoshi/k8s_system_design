@@ -83,4 +83,42 @@ By creating an object, you are effectively telling the K8s system what you want 
 this is your cluster's desired state. 
 
 
+Required fields in .yaml files
+apiVersion: Which version of the K8s api are we using to create this
+Kind: What kind of object we are creating. 
+metadata: Data that helps uniquely identify the object, including a name, string, UID, and optional namespace. 
+spec: What state you desire for the object. Different for every K8s object type. 
+
+Refer K8s api to check specs for different object types.
+Deployment is a workload resource. 
+
+spec for deployment:
+apiVersion
+kind 
+metadata
+spec:
+    selector
+        matchLabel
+    replicas
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxSurge: 3
+template:
+    metadata:
+        labels:
+            app: auth 
+    spec:
+        containers:
+            name: auth 
+            image: jayjoshi1109/auth
+            ports:
+                containerPort: 5000
+            envFrom:
+                configMapRef:
+                    name: auth-configMap
+                secretRef:
+                    name: auth-secret
+                    
+
 
