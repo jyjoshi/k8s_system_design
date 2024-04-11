@@ -120,5 +120,58 @@ template:
                 secretRef:
                     name: auth-secret
                     
+GRID FS: 
+
+BSON Document: Binary JSON Document
+The maximum BSON document size is 16 megabytes.
+
+The maximum document size helps ensure that a single document cannot use excessive amoun tof RAM or, 
+during transmission, excessive amount of bandwidth. To store documents larger than the maximum size, 
+MongoDB provides, the GridFS API.
+
+GridFS allows us to handle files bigger than 16 MB
+by sharding the files. 
+
+Instead of storing a file in a single document, GridFS divides the file into parts, or chunks, 
+and stores each chunk as a separate document. By default, GridFS usees a default chunk size of 255kb.
+that is, GridFS divides a file into chunks of 255kB with the exception of the last chunk. The last chunk 
+is only as large as necessary.
+
+Similarly, files that are no larger than the chunk size only have a final chunk, using only as much space as needed 
+plus some additional metadata. 
+
+Grid FS uses two collections to store files. One collection stores the file chunks, and the other stores file metadata. 
+Collections in mongodb can be seen as tables. 
+
+metadata: how to reassemble the chunks to reform the file. 
+
+
+Rabbit MQ : (It is a queue)
+
+When a video is uploaded to mongodb 
+A message is added to queue
+Letting downstream services know that there 
+is a video to be processed
+The video to mp3 converter will consume messages from q
+After converting video to mp3 and storing it in the mongodb
+the converter service will put a new message on the q
+to be consumed by the notification service that the conversion job is done. 
+The notification service then informs the client that the video is ready to be downloaded. 
+
+
+Key Terms when considering microservice architecture
+Synchronous and Asynchronous Interservice Communication
+Synchronous: 
+Client waits for response from server. 
+Gateway service synchronously connects with auth service. 
+Asynchronous:
+Client does not need to await the response of the downstream service. 
+This is a non-blocking request. This is achieved using a q.
+
+
+Strong Consistency vs Eventual Consistency 
+
+
+Strong and Eventual Consistency
 
 
