@@ -1,2 +1,3 @@
 python/src/auth/.env
+python/src/*/.env
 .DS_Store
