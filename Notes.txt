@@ -75,5 +75,12 @@ We can do this all using the command kubectl scale deployment --replicas=6 servi
 
 It will also autoconfigure the load balancer to handle the newly created pods. 
 
-We can cluster together a bunch of containerized services and easily orchestrate 
+We can cluster together a bunch of containerized services and easily orchestrate
+
+
+K8s object is a 'record of intent' - once you create the object, the K8s system will constantly work to ensure that object exits.
+By creating an object, you are effectively telling the K8s system what you want your cluster's workload to look like;
+this is your cluster's desired state. 
+
+
 
