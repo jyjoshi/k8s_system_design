@@ -190,4 +190,15 @@ Actually Not that Complicated and well summarized above.
 If need be fill in this section later. 
 
 
+What is the upload function in util.py file in the storage package for gateway service doing?
+It needs to first upload the file to our mongodb database using GridFS. 
+Once the file has been successfully uploaded, we need to put a message in our RabbitMQ queue
+so that a downstream service when they pull the message from the queue can process the upload 
+by pulling in from the mongo db 
+And this q is allowing us to create an asynchronous communication flow between our gateway service and 
+the service that actually processes our videos. 
+And this asynchronously is going to allow us to avoid the need for our gateway service to wait for 
+an internal service to process the video before being able to return response to the client. 
+
+
 
