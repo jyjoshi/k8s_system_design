@@ -185,7 +185,9 @@ Eventual Consistency:
 Our original Application Flow. 
 Need for q. 
 
-
+What is happening in the Gateway Service. 
+Actually Not that Complicated and well summarized above. 
+If need be fill in this section later. 
 
 
 
