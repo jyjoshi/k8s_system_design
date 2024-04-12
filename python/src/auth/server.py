@@ -57,12 +57,12 @@ def validate():
     return decoded, 200
 
 
-def createJWT(username, secret, is_admin):
+def createJWT(username, secret, authz):
     payload = {
         'username': username,
         'exp': datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1),
         'iat': datetime.datetime.utcnow(),
-        'admin': is_admin
+        'admin': authz
     }
     return jwt.encode(payload, secret, algorithm='HS256')
 
