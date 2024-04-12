@@ -162,16 +162,30 @@ The notification service then informs the client that the video is ready to be d
 Key Terms when considering microservice architecture
 Synchronous and Asynchronous Interservice Communication
 Synchronous: 
-Client waits for response from server. 
+Client awaits for response from server. 
+Client can't do anything until response from the server. 
 Gateway service synchronously connects with auth service. 
 Asynchronous:
 Client does not need to await the response of the downstream service. 
 This is a non-blocking request. This is achieved using a q.
+Gateway service aysnchronouly connects with the converter service.
+The gateway service uploads the video no mongodb and pushes a message to the q. 
+The same happens between conversion service and notification service.
 
 
 Strong Consistency vs Eventual Consistency 
 
+Strong Consistency: 
+Application Flow:
+Video -> Gateway -> synchronous request -> Converter Service  -> 
+After conversion converter provides id to download mp3 -> Gateway provides the id to the user for download
+No need for q.
 
-Strong and Eventual Consistency
+Eventual Consistency:
+Our original Application Flow. 
+Need for q. 
+
+
+
 
 
