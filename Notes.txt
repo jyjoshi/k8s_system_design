@@ -307,4 +307,18 @@ but this config will work just fine for our purposes.
 
 We only use one replica to achieve the competing consumers pattern
 
-The most important configuration to understand for this particular
+The most important configuration to understand for this particular service is how we are going to be persisting the data in our qs. 
+If our instance fails we dont want to lose all the messages that havent been processed. 
+
+Because, then the users that uploaded the videos that produced those messages will never hear back from us
+
+We want to mount the physical storage on our local to the container istance. 
+And if the container instance happens to die , of course the storage volume that is mounted
+would remain intact 
+Then the new is redeployed it will once again have the same physical storage mounted to it. 
+
+Long Story Short: RabbitMQ needs persistence of data. 
+Rabbit MQ mounts on a physical storage using a physical path on your local system and this is where it Saves queues and message
+
+
+
