@@ -229,6 +229,54 @@ and set the exchange to the default exchange
 and that will result in our message going to the q specified by the routing key 
 
 
+What is an  Ingress in K8s?
+
+In the yaml files when we say 
+type: ClusterIP 
+the IP Addresses can only be accessed from within the cluster. 
+
+But our gateway api needs to be accessed from outside the cluster. 
+So we will need another config called ingress to route traffic to our actual gateway service
+
+To understand what an ingress is k8s
+we need to understand what service is in k8s
+Service: can be thought as a group of pods.
+So in our case we want to create a gateway service
+and we want that service to be able to scale up to multiple instances or multiple pods
+
+So the service comes in and groups all of the instances of our gateway service together, 
+and it does this by using a selector 
+So in our case we are using the label selector to tell our service 
+what pods are part of its group or under its umbrella
+So the label selector binds our pods to this service. 
+So any pod with this label will be recognized by the service as being part of its group
+
+Now, we dont have to think about individual ips for each individual pod and we dont have to worry about keeping track of ips of pods that go down or are recreated. 
+We also dont have to think about how requests to our service are load balanced to each individual pod. 
+The service abstracts all this away from us. 
+So now we can just send requests to the service's clusterIP which is its internal ips
+and we assume that these requests will be distributed logically amongst our pods based on 
+something like round robin for example. 
+
+Now that we have a clear picture of service, we can get into what ingress is. 
+So we have our service, with its pods and that service sits in our cluster which is our private network 
+But we need to allow requests from outside our cluster to hit our gateway service's endpoints
+We do this by making use of an ingress. 
+
+Example images to be added here: mp3converter_ingress and ingress_understanding_apples.
+An ingress consists of a load balancer which is an entry point for our cluster and a set of rules. 
+Those rules basically say which requests go where. 
+
+For eg, we have a rule that says any request that hits our load balancer via the domain name 
+mp3converter.com should be routed to our gateway service. 
+
+Since this load balancer is the entrypoint to our cluster. 
+It can actually route traffic to the cluster IPs within the clusters.
+So in this case it would route requests going to the configured mp3converter.com domain to 
+our gateway service's internal ip
+
+and if we wanted to we could also add a rule to our ingress that says to route requests to 
+to apples.com to a different service in our cluster for example. 
 
 
 
