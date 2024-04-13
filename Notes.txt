@@ -202,3 +202,33 @@ an internal service to process the video before being able to return response to
 
 
 
+How does RabbitMQ fit into our architecture?
+
+Top level overview of how RabbitMQ integrates with our system
+
+Producer doesn't publish the message directly to the q
+It does so using an exchange
+
+RabbitMQ is not a single q, under the hood we can and do create multiple q, 
+We configure multiple qs withing one rabbitmq instance. 
+
+For eg. in our case, 
+We will have 2 qs for our case
+a queue we will call video
+and a queue we will call mp3 
+
+So when our producer provides a message to exchange.
+The exchange will route the message to the correct q based on some criteria
+
+Default exchange: is a direct exchange with no name predeclared by the broker. Broker for us is the RabbitMQ instance. 
+Default exchange has this special property which makese it very useful for simple application
+i.e. every q created is automatically bound to the default exchange with a routing key which is the same as the q name. 
+
+Simply put, this just means that we can set our routing key to the name of the q that we want our message to be directed to 
+and set the exchange to the default exchange 
+and that will result in our message going to the q specified by the routing key 
+
+
+
+
+
