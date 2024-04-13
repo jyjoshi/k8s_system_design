@@ -280,3 +280,31 @@ to apples.com to a different service in our cluster for example.
 
 nginx is the load balancer portion of the ingress that we discussed. 
 
+
+Creating the RabbitMQ
+Instead of making a deployment we will need to make a stateful set. 
+We need the messages in the queue to stay persistent even if the pod crashes.
+
+Stateful Set 
+
+A stateful set is similar to a deployment in that it manages the deployment and scaling 
+of a set of pods and these pods are based on an identical container spec. 
+
+But unlike deployment, with the stateful set, each pod has a persistent identifier that it maintains across any rescheduling
+This means that if a pod fails the persistend pod identifier make it easier to match the existing volumes to the new pods that replace any that have failed. 
+And this is important, because if we were to have multiple instances of say for eg. a mysql server, each individual instance 
+would reference its own physical stoarge. 
+
+There would be a master pod that is able to persist data to its physical storage 
+and the rest of the pods will be slaves and they would only be able to read the data 
+from their physical storage.
+
+And the physical storage that the slave pods use will be continuosly synced with the master pods 
+physical storage because that is where all of the data persistance happens. 
+
+There is probably a better way to configure our rabbitMQ broker within our cluster 
+but this config will work just fine for our purposes. 
+
+We only use one replica to achieve the competing consumers pattern
+
+The most important configuration to understand for this particular
