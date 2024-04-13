@@ -278,5 +278,5 @@ our gateway service's internal ip
 and if we wanted to we could also add a rule to our ingress that says to route requests to 
 to apples.com to a different service in our cluster for example. 
 
-
+nginx is the load balancer portion of the ingress that we discussed. 
 
