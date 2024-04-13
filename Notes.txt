@@ -322,3 +322,9 @@ Rabbit MQ mounts on a physical storage using a physical path on your local syste
 
 
 
+Issue Encountered:
+Could not get the auth service to work. 
+There seemed to be a problem with flask_mysqldb's connection with the mysql database. 
+Running it locally confirmed that the issue was with flask_mysqldb
+Tried using other python mysql connectors and they seemed to work fine locally 
+Shifted to pymysql, as it was the most loved on reddit. 
