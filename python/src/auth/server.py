@@ -6,13 +6,14 @@ server = Flask(__name__)
 
 
 # config
-db_config = (
-os.environ.get('MYSQL_HOST'),
-os.environ.get('MYSQL_USER'),
-os.environ.get('MYSQL_PASSWORD'),
-'auth',
-os.environ.get('MYSQL_PORT')
-)
+db_config = {
+    'host': os.environ.get('MYSQL_HOST'),
+    'user': os.environ.get('MYSQL_USER'),
+    'password': os.environ.get('MYSQL_PASSWORD'),
+    'db': 'auth',
+    'port': int(os.environ.get('MYSQL_PORT', 3306))  # Ensure it defaults to 3306 if not specified
+}
+
 
 def get_db_connection():
     return pymysql.connect(**db_config)
@@ -28,7 +29,7 @@ def login():
     try:
         with conn.cursor() as cur:
             res = cur.execute(
-                "SELECT email, password FROM users WHERE email = %s", (auth.username,)
+                "SELECT email, password FROM user WHERE email = %s", (auth.username,)
             )
 
             if res > 0:
