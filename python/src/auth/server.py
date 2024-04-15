@@ -48,7 +48,7 @@ def login():
 @server.route('/validate', methods=['POST'])
 def validate():
     logging.warning("In Validate")
-    logging.warning("Request headers Authorization:", request.headers["Authorization"])
+    # logging.warning("Request headers Authorization:", request.headers["Authorization"])
     encoded_jwt = request.headers["Authorization"]
 
     if not encoded_jwt:
@@ -63,7 +63,8 @@ def validate():
             os.environ.get('JWT_SECRET'),
             algorithm='HS256'
         )
-    except:
+    except Exception as e:
+        logging.warning(f"Error: {e}")
         logging.warning("Some issue in decoding")
         return "Invalid token", 401
     
