@@ -1,9 +1,9 @@
-import jwt, datetime, os, pymysql
+import jwt, datetime, os, pymysql, logging, sys
 from flask import Flask, request
 from flask_mysqldb import MySQL
 
 server = Flask(__name__)
-
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # config
 db_config = {
@@ -47,12 +47,15 @@ def login():
 
 @server.route('/validate', methods=['POST'])
 def validate():
+    logging.warning("In Validate")
+    logging.warning("Request headers Authorization:", request.headers["Authorization"])
     encoded_jwt = request.headers["Authorization"]
 
     if not encoded_jwt:
         return "Missing credentials", 401
     
     encoded_jwt = encoded_jwt.split(' ')[1]
+    logging.warning(f"Token Received {encoded_jwt}")
 
     try:
         decoded = jwt.decode(
@@ -61,6 +64,7 @@ def validate():
             algorithm='HS256'
         )
     except:
+        logging.warning("Some issue in decoding")
         return "Invalid token", 401
     
     return decoded, 200
