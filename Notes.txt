@@ -342,3 +342,8 @@ A little side step into logging:
 Unable to retrieve the execution of print statement through the container shells on k8s. 
 Hence, the need to use logging. 
 Used logging level warn, as it is easy to locate as all the logs are flushed on the container shell 
+
+Issue jwt.decode()
+decode function took a must have parameter algorithms = [] 
+we had provided algorithm = "alg"
+Needed to change it to -> algorithms=['alg']
