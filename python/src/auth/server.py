@@ -61,7 +61,7 @@ def validate():
         decoded = jwt.decode(
             encoded_jwt,
             os.environ.get('JWT_SECRET'),
-            algorithm='HS256'
+            algorithms=['HS256']
         )
     except Exception as e:
         logging.warning(f"Error: {e}")
