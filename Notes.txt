@@ -333,3 +333,8 @@ Shifted to pymysql, as it was the most loved on reddit.
 Issue PythonJWT: 
 The jwt package used initially was incorrect. 
 Had to import the correct jwt package and change the docker configuration. 
+
+
+We know: 
+Authorization in request.header
+
