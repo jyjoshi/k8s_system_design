@@ -39,7 +39,7 @@ def login():
                 if auth.username != email or auth.password != password:
                     return "Invalid credentials", 401
                 else:
-                    return createJWT(auth.username, os.environ.get('JWT_SECRET'), True)
+                    return "Authorization: Bearer "+createJWT(auth.username, os.environ.get('JWT_SECRET'), True)
             else:
                 return "Invalid Credentials", 401
     finally:
