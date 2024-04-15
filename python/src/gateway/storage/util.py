@@ -1,11 +1,14 @@
-import pika, json
+import pika, json, logging, sys
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def upload(f, fs, channel, access):
+    print("Inside upload function in util.py module in storage package")
 
     try:
         fid = fs.put(f) # Get file id for successful upload
     except Exception as err:
-        return "Internal server error: " 
+        return f"Internal server error: {err}", 500 
     
     message = {
         'video_fid': str(fid),
@@ -23,7 +26,8 @@ def upload(f, fs, channel, access):
             )            
         )
     
-    except:
+    except Exception as e:
+        logging.error(f"Error publishing message to queue: {e}")
         fs.delete(fid)
         return "Internal server error", 500
     
