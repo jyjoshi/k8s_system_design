@@ -347,3 +347,10 @@ Issue jwt.decode()
 decode function took a must have parameter algorithms = [] 
 we had provided algorithm = "alg"
 Needed to change it to -> algorithms=['alg']
+
+
+Issue Mongodb connection:
+We hadn't set up our mongodb conection on the localhost. 
+Hence, our microservices were not able to connect at port 27017. 
+This was fixed after downloading mongodb, and starting the server. 
+Something similar to what happened with mysql. 
