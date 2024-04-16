@@ -354,3 +354,20 @@ We hadn't set up our mongodb conection on the localhost.
 Hence, our microservices were not able to connect at port 27017. 
 This was fixed after downloading mongodb, and starting the server. 
 Something similar to what happened with mysql. 
+
+Our gateway is using the servicename for this rabbitmq service to connect to that host. 
+If we restart the rabbitmq, the gateway will still be resolving to the old host using that rabbitmq service name. 
+So, the gateway won't actually be able to connect if we restart rabbitmq
+unless we restart the gateway which would refresh its reference to the host. 
+
+In server.py gateway. we are connecting to our rabbitmq q using the service name "rabbitmq"
+So the service name in k8s resolves to the host. 
+So the theory is that, the clusterIP address that this service name resolves to, 
+which is the cluster Ip address of the service rabbitmq
+That ip address changes when we restart the rabbitmq pod
+but the gateeway pod still references the old ip adress using the service name
+which is why when we restart the gateway pod the correct rabbitmq reference gets updated using the service naem. 
+
+Essentially if the rabbitmq falters, and restarts. 
+Every service linked to the rabbitmq using its service name needds to restart as well
+to work correctly. 
