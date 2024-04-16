@@ -9,6 +9,7 @@ def upload(f, fs, channel, access):
         fid = fs.put(f) # Get file id for successful upload
     except Exception as err:
         return f"Internal server error: {err}", 500 
+    logging.warning(f"Uploaded file with id: {str(fid)}")
     
     message = {
         'video_fid': str(fid),
@@ -29,5 +30,5 @@ def upload(f, fs, channel, access):
     except Exception as e:
         logging.error(f"Error publishing message to queue: {e}")
         fs.delete(fid)
-        return "Internal server error", 500
+        return f"Internal server error: {e}", 500
     
