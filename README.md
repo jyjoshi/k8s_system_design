@@ -43,13 +43,6 @@ Instructions on how to deploy the microservices on Kubernetes:
 3. Apply the Kubernetes configurations to your cluster.
 4. Verify the deployment.
 
-## Usage
-
-How to use the service:
-
-- Endpoints to interact with the service.
-- Example requests and responses.
-
 ## Authors
 
 - Jay Joshi
