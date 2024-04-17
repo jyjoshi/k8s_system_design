@@ -1,0 +1,317 @@
+Notes
+
+The main purpose of this project is to understand how to design a system leveraging microservices.
+
+microservices are going to be running on a k8s cluster. 
+That cluster's internal network is accessible to the outside world through the internet. 
+Outside user accesses the internal services using the GATEWAY service. 
+
+The request received from client is communicated by the Gateway to the internal services; 
+
+To upload a file: gateway needs to have upload api
+
+Auth service: Provides authorization to user to access fully the application endpoints. 
+
+Basic Authentication: User provides username and password 
+base64(username: Password), we check this in our mysql db. 
+Gateway is the entry point to our system
+
+JWT: JSON Web Token, Used for authentication and authorization
+Every api call uses the JWT as the signing key (provides the access permissions)
+3 parts: 
+Two json formatted strings and a signature
+Base64 encoded. Seperated by a '.'
+
+First part:
+Header: Contains 2 kv pairs 
+1. kind of signing algorithm (Uses SH256 symmetric signing algorithm), 
+2. type of token (in our case JWT)
+
+Second Part:
+Payload: Claims for user: pieces of information about the user. 
+Eg. username, isadmin etc.
+Also a dictionary of kv pairs.
+
+3rd Part:
+Verify Signature: 
+Consists of 3 parts:
+1. Encoded header + 
+2. Encoded Payload + 
+3. Private Key 
+All encoded using our signing algorithm.
+
+
+Manifests:
+We write the infrastructure code for our auth deployment
+In python/src/auth :
+We wrote the code for our auth service
+We created a dockerfile to build the source code into a docker image
+We then pushed the docker image to a repository on the internet
+
+Now, within our manifests infrastructure code (auth-deploy.yaml)
+We are pulling that image from the internet and deploying it to k8s
+The image that we are pulling coutains our code. 
+
+So all these files within the manifest directory
+when applied, will interface with the k8s api which is the api for our k8s cluster
+So these files will create our service and corresponding resources. 
+
+To do this, all we need to do is kubectl apply -f ./ in the manifests directory 
+
+
+Kubernetes:
+K8s eliminates many of the manual operations in deploying and scaling containerized applications. 
+
+For example, if we configure a service to have 4 pods, k8s will keep a track of all the pods up and running
+And if any pods go down, then k8s will automatically scale the deployment so that the number of pods matches the 
+configured amount. So there is no need to manually deploy individual pods when a pod crashes. 
+K8s also makes manually scaling pods more streamlined. 
+
+Say I have a service that load balances request to individual pods using round robin.
+And that service is expeiencing more traffic than the pods to handle.
+So we increase From 2 to 6 pods.
+We can do this all using the command kubectl scale deployment --replicas=6 service
+
+It will also autoconfigure the load balancer to handle the newly created pods. 
+
+We can cluster together a bunch of containerized services and easily orchestrate using k8s.
+
+
+K8s object is a 'record of intent' - once you create the object, the K8s system will constantly work to ensure that object exits.
+By creating an object, you are effectively telling the K8s system what you want your cluster's workload to look like;
+this is your cluster's desired state. 
+
+
+Required fields in .yaml files
+apiVersion: Which version of the K8s api are we using to create this
+Kind: What kind of object we are creating. (Read about different kinds on )
+metadata: Data that helps uniquely identify the object, including a name, string, UID, and optional namespace. 
+spec: What state you desire for the object. Different for every K8s object type. 
+
+Refer K8s api to check specs for different object types.
+Deployment is a workload resource. 
+
+spec for deployment:
+apiVersion
+kind 
+metadata
+spec:
+    selector
+        matchLabel
+    replicas
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxSurge: 3
+template:
+    metadata:
+        labels:
+            app: auth 
+    spec:
+        containers:
+            name: auth 
+            image: jayjoshi1109/auth
+            ports:
+                containerPort: 5000
+            envFrom:
+                configMapRef:
+                    name: auth-configMap
+                secretRef:
+                    name: auth-secret
+                    
+What is GRID FS? 
+BSON Document: Binary JSON Document
+The maximum BSON document size is 16 megabytes.
+
+The maximum document size helps ensure that a single document cannot use excessive amount of RAM or, 
+during transmission, excessive amount of bandwidth. To store documents larger than the maximum size, 
+MongoDB provides, the GridFS API.
+
+GridFS allows us to handle files bigger than 16 MB
+by sharding the files. 
+
+Instead of storing a file in a single document, GridFS divides the file into parts, or chunks, 
+and stores each chunk as a separate document. By default, GridFS usees a default chunk size of 255kb.
+that is, GridFS divides a file into chunks of 255kB with the exception of the last chunk. The last chunk 
+is only as large as necessary.
+
+Similarly, files that are no larger than the chunk size only have a final chunk, using only as much space as needed 
+plus some additional metadata. 
+
+Grid FS uses two collections to store files. One collection stores the file chunks, and the other stores file metadata. 
+Collections in mongodb can be seen as tables. 
+
+metadata: how to reassemble the chunks to reform the file. 
+
+
+Rabbit MQ : (It is a queue)
+
+When a video is uploaded to mongodb 
+A message is added to queue
+Letting downstream services know that there 
+is a video to be processed
+The video to mp3 converter will consume messages from q
+After converting video to mp3 and storing it in the mongodb
+the converter service will put a new message on the q
+to be consumed by the notification service that the conversion job is done. 
+The notification service then informs the client that the video is ready to be downloaded. 
+
+
+Key Terms when considering microservice architecture
+
+Synchronous and Asynchronous Interservice Communication
+Synchronous: 
+Client awaits for response from server. 
+Client can't do anything until response from the server. 
+Gateway service synchronously connects with auth service. 
+
+Asynchronous:
+Client does not need to await the response of the downstream service. 
+This is a non-blocking request. This is achieved using a q.
+Gateway service aysnchronouly connects with the converter service.
+The gateway service uploads the video no mongodb and pushes a message to the q. 
+The same happens between conversion service and notification service.
+
+
+Strong Consistency vs Eventual Consistency 
+
+Strong Consistency: 
+Application Flow:
+Video -> Gateway -> synchronous request -> Converter Service  -> 
+After conversion converter provides id to download mp3 -> Gateway provides the id to the user for download
+No need for q.
+
+Eventual Consistency:
+Our original Application Flow. 
+Need for q. 
+
+
+What is the upload function in util.py file in the storage package for gateway service doing?
+It needs to first upload the file to our mongodb database using GridFS. 
+Once the file has been successfully uploaded, we need to put a message in our RabbitMQ queue
+so that a downstream service when they pull the message from the queue can process the upload 
+by pulling in from the mongo db 
+And this q is allowing us to create an asynchronous communication flow between our gateway service and 
+the service that actually processes our videos. 
+And this asynchronously is going to allow us to avoid the need for our gateway service to wait for 
+an internal service to process the video before being able to return response to the client. 
+
+
+
+How does RabbitMQ fit into our architecture?
+
+Top level overview of how RabbitMQ integrates with our system
+
+Producer doesn't publish the message directly to the q
+It does so using an exchange
+
+RabbitMQ is not a single q, under the hood we can and do create multiple q, 
+We configure multiple qs withing one rabbitmq instance. 
+
+For eg. in our case, 
+We will have 2 qs for our case
+a queue we will call video
+and a queue we will call mp3 
+
+So when our producer provides a message to exchange.
+The exchange will route the message to the correct q based on some criteria
+
+Default exchange: is a direct exchange with no name predeclared by the broker. Broker for us is the RabbitMQ instance. 
+Default exchange has this special property which makese it very useful for simple application
+i.e. every q created is automatically bound to the default exchange with a routing key which is the same as the q name. 
+
+Simply put, this just means that we can set our routing key to the name of the q that we want our message to be directed to 
+and set the exchange to the default exchange 
+and that will result in our message going to the q specified by the routing key 
+
+
+What is an  Ingress in K8s?
+
+In the yaml files when we say 
+type: ClusterIP 
+the IP Addresses can only be accessed from within the cluster. 
+
+But our gateway api needs to be accessed from outside the cluster. 
+So we will need another config called ingress to route traffic to our actual gateway service
+
+To understand what an ingress is k8s
+we need to understand what service is in k8s
+Service: can be thought as a group of pods.
+So in our case we want to create a gateway service
+and we want that service to be able to scale up to multiple instances or multiple pods
+
+So the service comes in and groups all of the instances of our gateway service together, 
+and it does this by using a selector 
+So in our case we are using the label selector to tell our service 
+what pods are part of its group or under its umbrella
+So the label selector binds our pods to the particular service. 
+So any pod with this label will be recognized by the service as being part of its group
+
+Now, we dont have to think about individual ips for each individual pod and we dont have to worry about keeping track of ips of pods that go down or are recreated. 
+We also dont have to think about how requests to our service are load balanced to each individual pod. 
+The service abstracts all this away from us. 
+So now we can just send requests to the service's clusterIP which is its internal ips
+and we assume that these requests will be distributed logically amongst our pods based on 
+something like round robin for example. 
+
+Now that we have a clear picture of service, we can get into what ingress is. 
+So we have our service, with its pods and that service sits in our cluster which is our private network 
+But we need to allow requests from outside our cluster to hit our gateway service's endpoints
+We do this by making use of an ingress. 
+
+Example images to be added here: mp3converter_ingress and ingress_understanding_apples.
+An ingress consists of a load balancer which is an entry point for our cluster and a set of rules. 
+Those rules basically say which requests go where. 
+
+For eg, we have a rule that says any request that hits our load balancer via the domain name 
+mp3converter.com should be routed to our gateway service. 
+
+Since this load balancer is the entrypoint to our cluster. 
+It can actually route traffic to the cluster IPs within the clusters.
+So in this case it would route requests going to the configured mp3converter.com domain to 
+our gateway service's internal ip
+
+and if we wanted to we could also add a rule to our ingress that says to route requests to 
+to apples.com to a different service in our cluster for example. 
+
+nginx is the load balancer portion of the ingress that we discussed. 
+
+
+Creating the RabbitMQ
+Instead of making a deployment we will need to make a stateful set. 
+We need the messages in the queue to stay persistent even if the pod crashes.
+
+Stateful Set 
+
+A stateful set is similar to a deployment in that it manages the deployment and scaling 
+of a set of pods and these pods are based on an identical container spec. 
+
+But unlike deployment, with the stateful set, each pod has a persistent identifier that it maintains across any rescheduling
+This means that if a pod fails the persistend pod identifier make it easier to match the existing volumes to the new pods that replace any that have failed. 
+And this is important, because if we were to have multiple instances of say for eg. a mysql server, each individual instance 
+would reference its own physical stoarge. 
+
+There would be a master pod that is able to persist data to its physical storage 
+and the rest of the pods will be slaves and they would only be able to read the data 
+from their physical storage.
+
+And the physical storage that the slave pods use will be continuosly synced with the master pods 
+physical storage because that is where all of the data persistance happens. 
+
+There is probably a better way to configure our rabbitMQ broker within our cluster 
+but this config will work just fine for our purposes. 
+
+We only use one replica to achieve the competing consumers pattern
+
+The most important configuration to understand for this particular service is how we are going to be persisting the data in our qs. 
+If our instance fails we dont want to lose all the messages that havent been processed. 
+
+Because, then the users that uploaded the videos that produced those messages will never hear back from us
+
+We want to mount the physical storage on our local to the container istance. 
+And if the container instance happens to die , of course the storage volume that is mounted 
+would remain intact. 
+Then the new is redeployed it will once again have the same physical storage mounted to it. 
+
+Long Story Short: RabbitMQ needs persistence of data. 
+Rabbit MQ mounts on a physical storage using a physical path on your local system and this is where it Saves queues and message
