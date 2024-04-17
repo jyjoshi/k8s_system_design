@@ -47,6 +47,17 @@ Ensure that mongodb is installed and running on the configured port on your loca
 
 Note: While applying kubernetes configuration, ensure that the rabbit service is setup before the others. Also ensure that minikube tunnel is on.
 
+## Usage
+
+How to use the service:
+Once deployed, you can use curl for sanity check of the services using the endpoints accessible to the client.
+
+Endpoints to interact with the service
+
+- login -> Need to provide username: password for authorization. Returns the jwt
+- upload -> Need to provide a video to be converted to mp3 and the jwt token for authentication.
+- download -> Need to provide the mp3_id, jwt. Returns the converted mp3. Also need to specify the file path to download to for curl.
+
 ## Authors
 
 - Jay Joshi
