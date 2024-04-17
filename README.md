@@ -32,6 +32,7 @@ Databases:
 - Docker
 - MySQL
 - MongoDb
+- Flask
 
 ### Deployment
 
