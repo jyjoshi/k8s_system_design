@@ -61,3 +61,8 @@ Endpoints to interact with the service
 ## Authors
 
 - Jay Joshi
+
+## Acknowledgement
+
+This project was created as a part of learning how Kubernetes implements orchestration.
+Reference to the base project: https://github.com/kantancoding/microservices-python
