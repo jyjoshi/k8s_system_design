@@ -37,11 +37,15 @@ Databases:
 ### Deployment
 
 Instructions on how to deploy the microservices on Kubernetes:
+Ensure that you have the mysql db on your localsystem with the correct db and tables for authentication of users.
+Ensure that mongodb is installed and running on the configured port on your local system. (27017)
 
 1. Build Docker images for the microservices.
 2. Configure Kubernetes resources (e.g., Deployments, Services, ConfigMaps, Secrets).
 3. Apply the Kubernetes configurations to your cluster.
 4. Verify the deployment.
+
+Note: While applying kubernetes configuration, ensure that the rabbit service is setup before the others. Also ensure that minikube tunnel is on.
 
 ## Authors
 
