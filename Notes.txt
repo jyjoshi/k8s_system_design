@@ -4,40 +4,40 @@ The main purpose of this project is to understand how to design a system leverag
 
 microservices are going to be running on a k8s cluster. 
 That cluster's internal network is accessible to the outside world through the internet. 
-Outside user accesses the internal services using the GATEWAY. 
+Outside user accesses the internal services using the GATEWAY service. 
 
-Gateway communicates with the internal services the request received from client. 
+The request received from client is communicated by the Gateway to the internal services; 
 
 To upload a file: gateway needs to have upload api
 
 Auth service: Provides authorization to user to access fully the application endpoints. 
 
-Basic Authentication: Userprovides username and password 
+Basic Authentication: User provides username and password 
 base64(username: Password), we check this in our mysql db. 
 Gateway is the entry point to our system
 
 JWT: JSON Web Token, Used for authentication and authorization
+Every api call uses the JWT as the signing key (provides the access permissions)
 3 parts: 
-
 Two json formatted strings and a signature
 Base64 encoded. Seperated by a '.'
 
 First part:
-Header: Contains a kv pair 1. kind of signing algorithm (Uses SH256 symmetric signing algorithm), 2. type of token (in our case JWT)
-
-Every api call uses the signing key (provides the access permissions)
+Header: Contains 2 kv pairs 
+1. kind of signing algorithm (Uses SH256 symmetric signing algorithm), 
+2. type of token (in our case JWT)
 
 Second Part:
 Payload: Claims for user: pieces of information about the user. 
-Eg. username, isadmin etc. 
+Eg. username, isadmin etc.
+Also a dictionary of kv pairs.
 
 3rd Part:
 Verify Signature: 
-
-1. Encoded header
-2. Encoded Payload
+Consists of 3 parts:
+1. Encoded header + 
+2. Encoded Payload + 
 3. Private Key 
-
 All encoded using our signing algorithm.
 
 
@@ -60,7 +60,6 @@ To do this, all we need to do is kubectl apply -f ./ in the manifests directory
 
 
 Kubernetes:
-
 K8s eliminates many of the manual operations in deploying and scaling containerized applications. 
 
 For example, if we configure a service to have 4 pods, k8s will keep a track of all the pods up and running
@@ -70,12 +69,12 @@ K8s also makes manually scaling pods more streamlined.
 
 Say I have a service that load balances request to individual pods using round robin.
 And that service is expeiencing more traffic than the pods to handle.
-So we increase From 2 to 5 pods.
+So we increase From 2 to 6 pods.
 We can do this all using the command kubectl scale deployment --replicas=6 service
 
 It will also autoconfigure the load balancer to handle the newly created pods. 
 
-We can cluster together a bunch of containerized services and easily orchestrate
+We can cluster together a bunch of containerized services and easily orchestrate using k8s.
 
 
 K8s object is a 'record of intent' - once you create the object, the K8s system will constantly work to ensure that object exits.
@@ -85,7 +84,7 @@ this is your cluster's desired state.
 
 Required fields in .yaml files
 apiVersion: Which version of the K8s api are we using to create this
-Kind: What kind of object we are creating. 
+Kind: What kind of object we are creating. (Read about different kinds on )
 metadata: Data that helps uniquely identify the object, including a name, string, UID, and optional namespace. 
 spec: What state you desire for the object. Different for every K8s object type. 
 
@@ -120,12 +119,11 @@ template:
                 secretRef:
                     name: auth-secret
                     
-GRID FS: 
-
+What is GRID FS? 
 BSON Document: Binary JSON Document
 The maximum BSON document size is 16 megabytes.
 
-The maximum document size helps ensure that a single document cannot use excessive amoun tof RAM or, 
+The maximum document size helps ensure that a single document cannot use excessive amount of RAM or, 
 during transmission, excessive amount of bandwidth. To store documents larger than the maximum size, 
 MongoDB provides, the GridFS API.
 
@@ -160,11 +158,13 @@ The notification service then informs the client that the video is ready to be d
 
 
 Key Terms when considering microservice architecture
+
 Synchronous and Asynchronous Interservice Communication
 Synchronous: 
 Client awaits for response from server. 
 Client can't do anything until response from the server. 
 Gateway service synchronously connects with auth service. 
+
 Asynchronous:
 Client does not need to await the response of the downstream service. 
 This is a non-blocking request. This is achieved using a q.
@@ -184,10 +184,6 @@ No need for q.
 Eventual Consistency:
 Our original Application Flow. 
 Need for q. 
-
-What is happening in the Gateway Service. 
-Actually Not that Complicated and well summarized above. 
-If need be fill in this section later. 
 
 
 What is the upload function in util.py file in the storage package for gateway service doing?
@@ -248,7 +244,7 @@ So the service comes in and groups all of the instances of our gateway service t
 and it does this by using a selector 
 So in our case we are using the label selector to tell our service 
 what pods are part of its group or under its umbrella
-So the label selector binds our pods to this service. 
+So the label selector binds our pods to the particular service. 
 So any pod with this label will be recognized by the service as being part of its group
 
 Now, we dont have to think about individual ips for each individual pod and we dont have to worry about keeping track of ips of pods that go down or are recreated. 
@@ -313,61 +309,9 @@ If our instance fails we dont want to lose all the messages that havent been pro
 Because, then the users that uploaded the videos that produced those messages will never hear back from us
 
 We want to mount the physical storage on our local to the container istance. 
-And if the container instance happens to die , of course the storage volume that is mounted
-would remain intact 
+And if the container instance happens to die , of course the storage volume that is mounted 
+would remain intact. 
 Then the new is redeployed it will once again have the same physical storage mounted to it. 
 
 Long Story Short: RabbitMQ needs persistence of data. 
 Rabbit MQ mounts on a physical storage using a physical path on your local system and this is where it Saves queues and message
-
-
-
-Issue Encountered:
-Could not get the auth service to work. 
-There seemed to be a problem with flask_mysqldb's connection with the mysql database. 
-Running it locally confirmed that the issue was with flask_mysqldb
-Tried using other python mysql connectors and they seemed to work fine locally 
-Shifted to pymysql, as it was the most loved on reddit. 
-
-
-Issue PythonJWT: 
-The jwt package used initially was incorrect. 
-Had to import the correct jwt package and change the docker configuration. 
-
-
-We know: 
-Authorization in request.header
-
-A little side step into logging:
-Unable to retrieve the execution of print statement through the container shells on k8s. 
-Hence, the need to use logging. 
-Used logging level warn, as it is easy to locate as all the logs are flushed on the container shell 
-
-Issue jwt.decode()
-decode function took a must have parameter algorithms = [] 
-we had provided algorithm = "alg"
-Needed to change it to -> algorithms=['alg']
-
-
-Issue Mongodb connection:
-We hadn't set up our mongodb conection on the localhost. 
-Hence, our microservices were not able to connect at port 27017. 
-This was fixed after downloading mongodb, and starting the server. 
-Something similar to what happened with mysql. 
-
-Our gateway is using the servicename for this rabbitmq service to connect to that host. 
-If we restart the rabbitmq, the gateway will still be resolving to the old host using that rabbitmq service name. 
-So, the gateway won't actually be able to connect if we restart rabbitmq
-unless we restart the gateway which would refresh its reference to the host. 
-
-In server.py gateway. we are connecting to our rabbitmq q using the service name "rabbitmq"
-So the service name in k8s resolves to the host. 
-So the theory is that, the clusterIP address that this service name resolves to, 
-which is the cluster Ip address of the service rabbitmq
-That ip address changes when we restart the rabbitmq pod
-but the gateeway pod still references the old ip adress using the service name
-which is why when we restart the gateway pod the correct rabbitmq reference gets updated using the service naem. 
-
-Essentially if the rabbitmq falters, and restarts. 
-Every service linked to the rabbitmq using its service name needds to restart as well
-to work correctly. 
